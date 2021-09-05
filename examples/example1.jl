@@ -1,0 +1,20 @@
+include("examples/graph_animations/animate_graph.jl")
+
+function ground(args...)
+    background("white")
+    sethue("black")
+end
+
+demo = Video(500, 500)
+Background(1:700, ground)
+g = SimpleDiGraph(6)
+add_edge!(g, 1, 2)
+add_edge!(g, 1, 3)
+add_edge!(g, 1, 4)
+add_edge!(g, 2, 5)
+add_edge!(g, 3, 5)
+add_edge!(g, 2, 6)
+add_edge!(g, 1, 6)
+animate_graph(g, :spring, :whole)
+animate_graph(g, :tree, :whole)
+render(demo; pathname="example1.gif")
