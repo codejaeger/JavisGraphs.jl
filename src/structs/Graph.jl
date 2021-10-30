@@ -1,12 +1,3 @@
-mutable struct ReferenceGraph
-    graph
-    adjacency_list::AbstractGraph
-    get_node_property::Function
-    get_edge_property::Function
-    edge_property_limits::Dict{Symbol,Any} # Any to allow lists, ranges, tuples (first and second must be defined on it)
-    node_property_limits::Dict{Symbol,Any}
-end
-
 """
     JGraph
 
@@ -46,16 +37,8 @@ struct JGraph <: AbstractJavisGraph
     graph::ReferenceGraph
     object::AbstractObject
     opts::Dict{Symbol, Any}
-    element_ordering::Vector{AbstractGraphElement}
+    ordering::Vector{AbstractGraphElement}
 end
-
-function ReferenceGraph(graph)
-    if graph isa AbstractGraph
-        # are 2 graph allocations required
-        return ReferenceGraph(graph, graph, (args...)->nothing, (args...)->nothing, Dict{Symbol, Any}(), Dict{Symbol, Any}())
-    end
-end
-
 
 GRAPHS = Vector{AbstractJavisGraph}()
 CURRENT_GRAPH = Array{AbstractJavisGraph, 1}()
@@ -65,13 +48,13 @@ CURRENT_GRAPH = Array{AbstractJavisGraph, 1}()
 
 Create an empty graph on the canvas.
 """
-JGraph(directed::Bool, width::Int, height::Int) =
-    directed ? JGraph(ReferenceGraph(LightGraphs.SimpleDiGraph()), width, height) :
-    JGraph(ReferenceGraph(LightGraphs.SimpleGraph()), width, height)
+JGraph(directed::Bool, width::Int, height::Int, frames=:same) =
+    directed ? JGraph(ReferenceGraph(LightGraphs.SimpleDiGraph()), width, height, frames) :
+    JGraph(ReferenceGraph(LightGraphs.SimpleGraph()), width, height, frames)
 
-JGraph(directed::Bool, width::Int, height::Int, layout::Symbol=:none) =
-    directed ? JGraph(ReferenceGraph(LightGraphs.SimpleDiGraph()), width, height; layout=layout) :
-    JGraph(ReferenceGraph(LightGraphs.SimpleGraph()), width, height; layout=layout)
+JGraph(directed::Bool, width::Int, height::Int, frames=:same; layout::Symbol=:none) =
+    directed ? JGraph(ReferenceGraph(LightGraphs.SimpleDiGraph()), width, height, frames; layout=layout) :
+    JGraph(ReferenceGraph(LightGraphs.SimpleGraph()), width, height, frames; layout=layout)
 
 """
     JGraph(graph, width::Int, height::Int; <keyword arguments>)
@@ -118,7 +101,8 @@ To be filled in ...
 function JGraph(
     graph::ReferenceGraph,
     width::Int,
-    height::Int;
+    height::Int,
+    frames=:same;
     mode::Symbol = :static,
     layout::Symbol = :spring
 )
@@ -133,7 +117,7 @@ function JGraph(
     elseif mode == :dynamic
         styles = [_global_property_limits]
     end
-    object = Object(get_draw(); _graph_idx = length(GRAPHS)+1)
+    object = Object(frames, get_draw(:graph); _graph_idx = length(GRAPHS)+1)
     opts = Dict{Symbol, Any}()
     opts[:styles] = styles
     jgraph = JGraph(
@@ -156,57 +140,42 @@ function JGraph(
 end
 
 function _global_property_limits(video, object, frames; kwargs...)
-    # g = GRAPHS[object.opts[:_idx]]
-    # for el in g.ordering
-    #     if typeof(el) == GraphNode
-    #         for (k, _) in el.property_style_map
-    #             val = g.get_node_attribute(k)
-    #             if typeof(val) == Real
-    #                 if !(k in keys(g.node_property_limits))
-    #                     g.node_property_limits[k] = (val, val)
-    #                 end
-    #                 g.node_property_limits[k] = (
-    #                     min(g.node_property_limits[k][1], val),
-    #                     max(g.node_property_limits[k][2], val),
-    #                 )
-    #             end
-    #         end
-    #     elseif typeof(el) == GraphEdge
-    #         for (k, _) in el.property_style_map
-    #             val = g.get_edge_attribute(k)
-    #             if typeof(val) == Real
-    #                 if !(k in keys(g.edge_property_limits))
-    #                     g.edge_property_limits[k] = (val, val)
-    #                 end
-    #                 g.edge_property_limits[k] = (
-    #                     min(g.edge_property_limits[k][1], val),
-    #                     max(g.edge_property_limits[k][2], val),
-    #                 )
-    #             end
-    #         end
-    #     end
-    # end
+    g = GRAPHS[object.opts[:_graph_idx]]
+    for el in g.ordering
+        get_property = typeof(el) <: AbstractGraphVertex ? g.graph.get_node_property : g.graph.get_edge_property
+        limits = typeof(el) <: AbstractGraphVertex ? g.graph.node_property_limits : g.graph.edge_property_limits
+        for (k, _) in el.property_style_map
+            val = get_property(k)
+            if !(typeof(val) <: Real)
+                throw("Cannot calculate limits. Property $(k) of $(typeof(el)) is not of `Real` type")
+            end
+            if !(k in keys(limits))
+                limits[k] = (val, val)
+            end
+            limits[k] = (min(limits[k][1], val), max(limits[k][2], val))
+        end
+    end
 end
 
 function edges(g::JGraph)
-    # e = []
+    e = []
     
-    # for el in g.ordering
-    #     if el isa GraphEdge
-    #         push!(e, el)
-    #     end
-    # end
-    # return e
+    for el in g.ordering
+        if el isa AbstractGraphEdge
+            push!(e, el)
+        end
+    end
+    return e
 end
 
 function nodes(g::JGraph)
-    # e = []
-    # for el in g.ordering
-    #     if el isa GraphNode
-    #         push!(e, el)
-    #     end
-    # end
-    # return e
+    e = []
+    for el in g.ordering
+        if el isa GraphNode
+            push!(e, el)
+        end
+    end
+    return e
 end
 
 function _global_layout(video, object, frame; kwargs...)

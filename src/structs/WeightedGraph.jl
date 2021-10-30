@@ -3,11 +3,14 @@
 
 Utility graph type to store one extra property with nodes and edges.
 """
-mutable struct WeightedGraph{T<:Number} <: AbstractGraph{T}
+mutable struct WeightedGraph{T} <: AbstractGraph{T}
     graph::AbstractGraph{T}
     node_w::Dict{T,Any}
     edge_w::Dict{Pair{T,T},Any}
 end
+
+Base.convert(::Type{WeightedGraph}, g::SimpleGraph) = WeightedGraph(g)
+Base.convert(::Type{WeightedGraph}, g::SimpleDiGraph) = WeightedGraph(g)
 
 function WeightedGraph(graph::AbstractGraph{T}) where {T}
     return WeightedGraph(graph, Dict{T,Any}(), Dict{Pair{T,T},Any}())
