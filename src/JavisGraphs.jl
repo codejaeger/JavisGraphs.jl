@@ -1,7 +1,7 @@
 module JavisGraphs
 
 
-using Javis: isempty
+using Javis: isempty, Frames
 using Javis
 import Javis: render, AbstractObject
 using LightGraphs
@@ -10,14 +10,15 @@ using GraphPlot
 
 abstract type AbstractJavisGraph end
 abstract type AbstractGraphElement end
-abstract type AbstractGraphNode <: AbstractGraphElement end
+abstract type AbstractGraphVertex <: AbstractGraphElement end
 abstract type AbstractGraphEdge <: AbstractGraphElement end
 
 include("utils.jl")
+include("structs/WeightedGraph.jl")
+include("structs/ReferenceGraph.jl")
 include("structs/Graph.jl")
 include("structs/GraphVertex.jl")
 include("structs/GraphEdge.jl")
-include("structs/WeightedGraph.jl")
 
 include("node_shapes.jl")
 include("edge_shapes.jl")
@@ -28,6 +29,6 @@ for func in names(Javis; imported = true)
     eval(Expr(:export, func))
 end
 
-export JGraph, ReferenceGraph
+export JGraph, WeightedGraph, ReferenceGraph, GraphVertex, GraphEdge
 
 end # module

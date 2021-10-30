@@ -1,34 +1,38 @@
-# """
-#     GraphVertex
+"""
+    GraphVertex
 
-# Store the drawing function and properties individual to the node.
+Store the drawing function and properties individual to the node.
 
-# # Examples
-# ```julia
-# function draw(;position, radius)
-#     circle(position, radius, :stroke)
-#     return position
-# end
+# Examples
+```julia
+function draw(;position, radius)
+    circle(position, radius, :stroke)
+    return position
+end
 
-# g_props = [Dict(:weight=>2, :neighbors=>[2])
-#      Dict(:weight=>4, :neighbors=>[1])]
-# ga = @Object(1:100, Graph(true, 100, 100), O)
+g_props = [Dict(:weight=>2, :neighbors=>[2])
+     Dict(:weight=>4, :neighbors=>[1])]
+ga = @Object(1:100, Graph(true, 100, 100), O)
 
-# node1 = @Graph(ga, 1:50, GraphVertex(1, [draw_shape(:square, 12), draw_text(:inside, "123"), fill(:image, "./img.png"), custom_border()];
-#                                      animate_on=:scale, property_style_map=Dict(:weight=>:radius)))
+node1 = @Graph(ga, 1:50, GraphVertex(1, [draw_shape(:square, 12), draw_text(:inside, "123"), fill(:image, "./img.png"), custom_border()];
+                                     animate_on=:scale, property_style_map=Dict(:weight=>:radius)))
 
-# # each of these draw_* functions return functionsn with specified change keywords like radius, border_color etc.
-# # expose as many of these props as supported by Luxor drawing
-# node2 = @Graph(ga, 50:100, GraphVertex(2, draw; animate_on=:scale, property_style_map=Dict(:weight=>:radius)))
-# render(video; pathname="graph_node.gif")
-# ```
-# """
-# struct GraphVertex
-#     node::Integer
-#     animate_on::Symbol
-#     property_style_map::Dict{Any,Symbol}
-#     opts::Dict{Symbol, Any}
-# end
+# each of these draw_* functions return functionsn with specified change keywords like radius, border_color etc.
+# expose as many of these props as supported by Luxor drawing
+node2 = @Graph(ga, 50:100, GraphVertex(2, draw; animate_on=:scale, property_style_map=Dict(:weight=>:radius)))
+render(video; pathname="graph_node.gif")
+```
+"""
+struct GraphVertex <: AbstractGraphVertex
+    vertex_id
+    object::AbstractObject
+    animate_on::Symbol
+    style_property_map::Dict{Symbol, Any}
+    opts::Dict{Symbol, Any}
+end
+
+GRAPH_VERTICES = Vector{AbstractGraphVertex}()
+CURRENT_GRAPH_VERTEX = Array{AbstractGraphVertex, 1}()
 
 # """
 #     GraphVertex(node::Integer, draw::Function; <keyword arguments>)
@@ -55,39 +59,50 @@
 #         - `:radius`
 # - `property_style_map::Dict{Any,Symbol}`: A mapping to of how node attributes map to node drawing styles.
 # """
-# GraphVertex(node::Integer, draw; kwargs...) =
-#     GraphVertex(CURRENT_GRAPH[1], node, compile_draw_funcs(draw)...; kwargs...)
 
-# GraphVertex(node::Integer, draw::Function; kwargs...) =
-#     GraphVertex(CURRENT_GRAPH[1], node, draw; kwargs...)
+GraphVertex(vertex_id::Integer, frames; kwargs...) =
+    GraphVertex(CURRENT_GRAPH[1], vertex_id, frames; kwargs...)
 
-# GraphVertex(graph::AbstractObject, node::Integer, draw; kwargs...) =
-#     GraphVertex(graph, node, compile_draw_funcs(draw)...; kwargs...)
+GraphVertex(vertex_id::Integer, object::AbstractObject; kwargs...) =
+    GraphVertex(CURRENT_GRAPH[1], vertex_id, object; kwargs...)
 
-# function GraphVertex(
-#     graph::AbstractObject,
-#     node::Integer,
-#     draw::Function,
-#     opts::Dict{Symbol, Any} = Dict{Symbol, Any}(); # Make this a kw in the future
-#     animate_on::Symbol = :opacity,
-#     property_style_map::Dict{Any,Symbol} = Dict{Any,Symbol}(),
-# )
-#     g = graph.meta
-#     if !(typeof(g) <: JGraph)
-#         throw(ErrorException("Cannot define node since $(typeof(graph)) is not a `JGraph`"))
-#     end
-#     if g.mode == :static
-#         if get_prop(g.adjacency_list, node) !== nothing
-#             @warn "Node $(node) is already created on canvas. Recreating it will leave orphan node objects in the animation. To undo, call `rem_node!`"
-#         end
-#         draw_fn = draw
-#         add_vertex!(g.adjacency_list.graph)
-#         set_prop!(g.adjacency_list, nv(g.adjacency_list), length(g.ordering)+1)
-#         graph_vertex = GraphVertex(node, animate_on, property_style_map, opts)
-#         return draw_fn, graph_vertex
-#     elseif g.mode == :dynamic
-#     end
-# end
+function GraphVertex(
+    jg::JGraph,
+    vertex_id::Integer,
+    frames;
+    kwargs...
+)
+    object = Object(frames, get_draw(:vertex); kwargs...)
+    return GraphVertex(jg, vertex_id, object; kwargs...)
+end
+
+function GraphVertex(
+    jg::JGraph,
+    vertex_id::Integer,
+    object::AbstractObject;
+    animate_on::Symbol = :opacity,
+    style_property_map::Dict{Any,Symbol} = Dict{Any,Symbol}()
+)
+    if jg.mode == :static
+        if has_vertex(jg.graph.adjacency_graph, vertex_id)
+            @warn "Vertex $(vertex_id) is already created on canvas. Recreating it will leave orphan vertex objects in the animation. To undo, call `rem_vertex!`"
+        end
+        object.opts[:_vertex_idx] = length(GRAPH_VERTICES) + 1
+        opts = Dict{Symbol, Any}()
+        add_vertex!(jg.graph.adjacency_graph)
+        set_prop!(jg.graph.adjacency_graph, vertex_id, length(jg.ordering) + 1)
+        vertex = GraphVertex(vertex_id, object, animate_on, style_property_map, opts)
+        push!(GRAPH_VERTICES, vertex)
+        push!(jg.ordering, vertex)
+        if isempty(CURRENT_GRAPH_VERTEX)
+            push!(CURRENT_GRAPH_VERTEX, vertex)
+        else
+            CURRENT_GRAPH_VERTEX[1] = vertex
+        end
+        return vertex
+    elseif g.mode == :dynamic
+    end
+end
 
 # """
 #     compile_draw_funcs(draw)
