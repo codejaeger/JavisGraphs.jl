@@ -88,7 +88,11 @@ function GraphVertex(
             @warn "Vertex $(vertex_id) is already created on canvas. Recreating it will leave orphan vertex objects in the animation. To undo, call `rem_vertex!`"
         end
         object.opts[:_vertex_idx] = length(GRAPH_VERTICES) + 1
+        # ToDo: Create a mapping for vertex ids here
+        # vertex id for the graph vertex need not be same as vertex id for adjacency graph
+        # vertex_id = object.opts[:_vertex_idx] # this breaks test
         opts = Dict{Symbol, Any}()
+        opts[:styles] = Function[(args...; kw...) -> Luxor.clipreset()]
         add_vertex!(jg.graph.adjacency_graph)
         set_prop!(jg.graph.adjacency_graph, vertex_id, length(jg.ordering) + 1)
         vertex = GraphVertex(vertex_id, object, animate_on, style_property_map, opts)
@@ -103,29 +107,3 @@ function GraphVertex(
     elseif g.mode == :dynamic
     end
 end
-
-# """
-#     compile_draw_funcs(draw)
-
-# Aggregate all the draw functions into one.
-# """
-# function compile_draw_funcs(draw)
-#     draw_opts = Dict{Symbol, Any}()
-#     draw_fns = Vector{Function}()
-#     for d in draw
-#         if typeof(d) <: Tuple
-#             draw_opts = merge(draw_opts, d[1])
-#             push!(draw_fns, d[2])
-#         else
-#             push!(draw_fns, d)
-#         end
-#     end
-#     # Process drawing functions
-#     combined_draw = (args...; kwargs...) -> begin
-#         for d in draw_fns
-#             d(args...; kwargs...)
-#         end
-#         clipreset()
-#     end
-#     return combined_draw, draw_opts
-# end

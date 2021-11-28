@@ -31,6 +31,8 @@ struct GraphEdge <: AbstractGraphEdge
     opts::Dict{Symbol, Any}
 end
 
+Base.convert(::Type{Pair}, x::AbstractGraphEdge) = Pair(x.from_vertex.vertex_id, x.to_vertex.vertex_id)
+
 GRAPH_EDGES = Vector{AbstractGraphEdge}()
 CURRENT_GRAPH_EDGE = Array{AbstractGraphEdge, 1}()
 
@@ -95,6 +97,7 @@ function GraphEdge(
         end
         object.opts[:_edge_idx] = length(GRAPH_EDGES) + 1
         opts = Dict{Symbol, Any}()
+        opts[:styles] = Function[(args...; kw...) -> Luxor.clipreset()]
         add_edge!(jg.graph.adjacency_graph, from_vertex, to_vertex)
         set_prop!(jg.graph.adjacency_graph, from_vertex, to_vertex, length(jg.ordering)+1)
         if !is_directed(jg.graph.adjacency_graph)

@@ -52,7 +52,7 @@ JGraph(directed::Bool, width::Int, height::Int, frames=:same) =
     directed ? JGraph(ReferenceGraph(LightGraphs.SimpleDiGraph()), width, height, frames) :
     JGraph(ReferenceGraph(LightGraphs.SimpleGraph()), width, height, frames)
 
-JGraph(directed::Bool, width::Int, height::Int, frames=:same; layout::Symbol=:none) =
+JGraph(directed::Bool, width::Int, height::Int, frames=:same; layout::Symbol=:spring) =
     directed ? JGraph(ReferenceGraph(LightGraphs.SimpleDiGraph()), width, height, frames; layout=layout) :
     JGraph(ReferenceGraph(LightGraphs.SimpleGraph()), width, height, frames; layout=layout)
 
@@ -144,7 +144,7 @@ function _global_property_limits(video, object, frames; kwargs...)
     for el in g.ordering
         get_property = typeof(el) <: AbstractGraphVertex ? g.graph.get_node_property : g.graph.get_edge_property
         limits = typeof(el) <: AbstractGraphVertex ? g.graph.node_property_limits : g.graph.edge_property_limits
-        for (k, _) in el.property_style_map
+        for (k, _) in el.style_property_map
             val = get_property(k)
             if !(typeof(val) <: Real)
                 throw("Cannot calculate limits. Property $(k) of $(typeof(el)) is not of `Real` type")
@@ -157,9 +157,11 @@ function _global_property_limits(video, object, frames; kwargs...)
     end
 end
 
-function edges(g::JGraph)
+function LightGraphs.edges(g::JGraph, in_order=false)
     e = []
-    
+    if !in_order
+        return g.ordering[map(e -> get_prop(g.graph.adjacency_graph, src(e), dst(e)), edges(g.graph.adjacency_graph))]
+    end
     for el in g.ordering
         if el isa AbstractGraphEdge
             push!(e, el)
@@ -168,60 +170,64 @@ function edges(g::JGraph)
     return e
 end
 
-function nodes(g::JGraph)
-    e = []
+function LightGraphs.vertices(g::JGraph, in_order=false)
+    if !in_order
+        return g.ordering[map(v -> get_prop(g.graph.adjacency_graph, v), vertices(g.graph.adjacency_graph))]
+    end
+    v = []
     for el in g.ordering
-        if el isa GraphNode
-            push!(e, el)
+        if el isa AbstractGraphVertex
+            push!(v, el)
         end
     end
-    return e
+    return v
 end
 
 function _global_layout(video, object, frame; kwargs...)
-    # g = GRAPHS[object.opts[:_idx]]
-    # if frame == first(get_frames(object))
-    #     layout_x = []
-    #     layout_y = []
-    #     if g.layout == :spring
-    #         # Check due to some errors in calling spring_layout with an empty graph
-    #         if nv(g.adjacency_list.graph) > 0
-    #             layout_x, layout_y = spring_layout(g.adjacency_list)
-    #         end
-    #     elseif g.layout == :spectral
-    #         # Check special property layout_weight is defined on edges and collect weights
-    #         weights = map(
-    #             (e) -> get(e.opts, :layout_weight, 1),
-    #             edges(g),
-    #         )
-    #         if nv(g.adjacency_list) > 0
-    #             layout_x, layout_y = spectral_layout(g.adjacency_list, weights)
-    #         end
-    #     end
-    #     if g.layout == :none
-    #         object.opts[:layout] = Vector{Point}()
-    #         for (idx, n) in enumerate(nodes(g.adjacency_list))
-    #             push!(object.opts[:layout], object.opts[:position])
-    #         end
-    #     else
-    #         # Normalize coordinates between -0.5 and 0.5
-    #         coords = map((p) -> Point(p), collect(zip(layout_x, layout_y))) .- [(0.5, 0.5)]
-    #         # Scale to graph dimensions
-    #         coords = coords .* [(g.width, g.height)]
-    #         object.opts[:layout] = coords
-    #     end
-    # end
-    # # Now assign positions back to all nodes
-    # for (idx, p) in enumerate(nodes(g.adjacency_list))
-    #     g.ordering[p].meta.opts[:position] = object.opts[:layout][idx] + object.start_pos
-    # end
-    # # Define keyword arguments for edges defining endpoint position
-    # for (_, p) in enumerate(edges(g.adjacency_list))
-    #     from_node = get_prop(g.adjacency_list, g.ordering[p].from_node.node)
-    #     to_node = get_prop(g.adjacency_list, g.ordering[p].to_node.node)
-    #     g.ordering[p].opts[:p1] = g.ordering[from_node].meta.opts[:position]
-    #     g.ordering[p].opts[:p2] = g.ordering[to_node].opts[:position]
-    #     g.ordering[p].opts[:from_node_bbx] = get(g.ordering[from_node].opts, :bounding_box, (O, O))
-    #     g.ordering[p].opts[:to_node_bbx] = get(g.ordering[to_node].opts, :bounding_box, (O, O))
-    # end
+    g = GRAPHS[object.opts[:_graph_idx]]
+    if frame == first(get_frames(object))
+        layout_x = []
+        layout_y = []
+        if g.layout == :spring
+            # Check due to some errors in calling spring_layout with an empty graph
+            if nv(g.graph.adjacency_graph) > 0
+                layout_x, layout_y = spring_layout(g.graph.adjacency_graph)
+            end
+        elseif g.layout == :spectral
+            # Check special property layout_weight is defined on edges and collect weights
+            weights = map(
+                (e) -> get(e.object.opts, :weight, 1),
+                edges(g, true),
+            )
+            if nv(g.graph.adjacency_graph) > 0
+                # Might be some bug in the order in which weights is passed
+                layout_x, layout_y = spectral_layout(g.graph.adjacency_graph, weights)
+            end
+        end
+        if g.layout == :none
+            object.opts[:layout_coords] = Vector{Point}()
+            for v in vertices(g)
+                push!(object.opts[:layout_coords], v.object.opts[:position])
+            end
+        else
+            # Normalize coordinates between -0.5 and 0.5
+            coords = map((p) -> Point(p), collect(zip(layout_x, layout_y))) .- [(0.5, 0.5)]
+            # Scale to graph dimensions
+            coords = coords .* [(g.width, g.height)]
+            object.opts[:layout_coords] = coords
+        end
+    end
+    # Now assign positions back to all nodes
+    for (idx, v) in  enumerate(vertices(g))
+        v.object.opts[:position] = object.opts[:layout_coords][idx] + object.start_pos
+    end
+    # Define keyword arguments for edges defining endpoint position
+    for e in edges(g)
+        from_vertex = g.ordering[get_prop(g.graph.adjacency_graph, e.from_vertex.vertex_id)]
+        to_vertex = g.ordering[get_prop(g.graph.adjacency_graph, e.to_vertex.vertex_id)]
+        e.object.opts[:p1] = from_vertex.object.opts[:position]
+        e.object.opts[:p2] = to_vertex.object.opts[:position]
+        e.object.opts[:from_vertex_bbx] = get(from_vertex.object.opts, :bounding_box, (O, O))
+        e.object.opts[:to_vertex_bbx] = get(to_vertex.object.opts, :bounding_box, (O, O))
+    end
 end
