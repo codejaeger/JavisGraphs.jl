@@ -7,7 +7,7 @@ function check_graph_render()
     e1 = GraphEdge(1, 2, 1:2)
     a = 1
     style1 = (args...; kw...) -> ()
-    style2 = (args...; kw...) -> begin @register_style_opts v1 a end
+    style2 = (video, object, args...; kw...) -> begin @register_style_opts object a end
     @add_styles v1 [style1]
     @add_styles v2 [style2]
     @add_styles e1 [style1, style2]

@@ -1,6 +1,12 @@
 # JavisGraphs
 A network graph plotting utility based on Javis
 
+**Development**
+`cd` into the JavisGraphs directory and `dev .`
+
+**Testing**
+`test JavisGraphs`
+
 ToDo:
 
 * Compute node layout based on user's choice - Graph.jl

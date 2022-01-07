@@ -120,6 +120,7 @@ function JGraph(
     object = Object(frames, get_draw(:graph); _graph_idx = length(GRAPHS)+1)
     opts = Dict{Symbol, Any}()
     opts[:styles] = styles
+    object.opts[:_style_opts_cache] = Dict{Symbol, Any}()
     jgraph = JGraph(
         width,
         height,

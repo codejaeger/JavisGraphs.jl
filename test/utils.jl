@@ -63,8 +63,7 @@ function check_add_styles()
 
     @add_styles v [dummy_node_shape()]
 
-    print(length(v.opts[:styles]))
-    return length(v.opts[:styles]) == 5
+    return length(v.opts[:styles]) == 4
 end
 
 global c = 3
@@ -74,6 +73,6 @@ function check_register_style_opts()
     v = GraphVertex(1, 1:2)
     a = 1
     b = 2
-    @register_style_opts v a b c
-    return v.object.opts[:a] == 1 && v.object.opts[:b] == 2 && v.object.opts[:c] == 3
+    @register_style_opts v.object a b c
+    return v.object.opts[:_style_opts_cache][:a] == 1 && v.object.opts[:_style_opts_cache][:b] == 2 && v.object.opts[:_style_opts_cache][:c] == 3
 end

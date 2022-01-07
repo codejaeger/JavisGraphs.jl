@@ -97,7 +97,8 @@ function GraphEdge(
         end
         object.opts[:_edge_idx] = length(GRAPH_EDGES) + 1
         opts = Dict{Symbol, Any}()
-        opts[:styles] = Function[(args...; kw...) -> Luxor.clipreset()]
+        opts[:styles] = Function[]
+        object.opts[:_style_opts_cache] = Dict{Symbol, Any}()
         add_edge!(jg.graph.adjacency_graph, from_vertex, to_vertex)
         set_prop!(jg.graph.adjacency_graph, from_vertex, to_vertex, length(jg.ordering)+1)
         if !is_directed(jg.graph.adjacency_graph)
