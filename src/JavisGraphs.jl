@@ -39,7 +39,7 @@ export edges, vertices, register_style_opts, add_styles, get_draw
 
 export node_shape, node_text, node_fill, node_border
 
-export edge_shape
+export edge_shape, edge_style, edge_arrow, edge_text
 
 # Export each function from Luxor
 for func in names(LightGraphs; imported = true)

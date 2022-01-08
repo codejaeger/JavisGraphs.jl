@@ -184,6 +184,14 @@ function LightGraphs.vertices(g::JGraph, in_order=false)
     return v
 end
 
+function LightGraphs.neighbors(g::JGraph, v::Integer; strict=false)
+    n = copy(LightGraphs.neighbors(g.graph.adjacency_graph, v))
+    if strict
+        filter!(x -> x ≠ v, n)
+    end
+    return map(x -> g.ordering[x], get_prop.([g.graph.adjacency_graph], n))
+end
+
 function _global_layout(video, object, frame; kwargs...)
     g = GRAPHS[object.opts[:_graph_idx]]
     if frame == first(get_frames(object))

@@ -23,17 +23,6 @@
 #     )
 # end
 
-# function neighbors(g::AbstractObject, v::Integer; strict=false)
-#     if !(typeof(g.meta) <: JGraph)
-#         throw(ErrorException("Cannot call 'neighbors' on object of type $(typeof(g))"))
-#     end
-#     n = copy(LightGraphs.neighbors(g.meta.adjacency_list, v))
-#     if strict
-#         filter!(x -> x ≠ v, n)
-#     end
-#     return map(x -> g.meta.ordering[x], get_prop.([g.meta.adjacency_list], n))
-# end
-
 # """
 #     add_vertex!()
 

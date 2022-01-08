@@ -87,6 +87,7 @@ function GraphVertex(
         if has_vertex(jg.graph.adjacency_graph, vertex_id)
             @warn "Vertex $(vertex_id) is already created on canvas. Recreating it will leave orphan vertex objects in the animation. To undo, call `rem_vertex!`"
         end
+        object.opts[:_graph_idx] = jg.object.opts[:_graph_idx]
         object.opts[:_vertex_idx] = length(GRAPH_VERTICES) + 1
         # ToDo: Create a mapping for vertex ids here
         # vertex id for the graph vertex need not be same as vertex id for adjacency graph

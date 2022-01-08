@@ -95,6 +95,7 @@ function GraphEdge(
         if has_edge(jg.graph.adjacency_graph, from_vertex, to_vertex)
             @warn "Edge $(from_vertex)=>$(to_vertex) is already created on canvas. Recreating it will leave orphan edges in the animation. To undo, call `rem_edge!`"
         end
+        object.opts[:_graph_idx] = jg.object.opts[:_graph_idx]
         object.opts[:_edge_idx] = length(GRAPH_EDGES) + 1
         opts = Dict{Symbol, Any}()
         opts[:styles] = Function[]
@@ -105,11 +106,11 @@ function GraphEdge(
             set_prop!(jg.graph.adjacency_graph, to_vertex, from_vertex, length(jg.ordering)+1)
         end
         if from_vertex == to_vertex
-            opts[:self_loop] = true
+            object.opts[:self_loop] = true
         elseif is_directed(jg.graph.adjacency_graph) && has_edge(jg.graph.adjacency_graph, to_vertex, from_vertex)
-            opts[:loop] = true
+            object.opts[:loop] = true
             other_edge = jg.ordering[get_prop(jg.graph.adjacency_graph, to_vertex, from_vertex)]
-            other_edge.opts[:loop] = true
+            other_edge.object.opts[:loop] = true
         end
         from_vertex_object = jg.ordering[get_prop(jg.graph.adjacency_graph, from_vertex)]
         to_vertex_object = jg.ordering[get_prop(jg.graph.adjacency_graph, to_vertex)]

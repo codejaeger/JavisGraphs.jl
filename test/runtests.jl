@@ -49,9 +49,16 @@ end
 end
 
 include("styles.jl")
-@testset "Styles" begin
+@testset "Node styles" begin
     @test check_node_shape()
     @test check_node_text()
     @test check_node_fill()
     @test check_node_border()
+end
+
+@testset "Edge styles" begin
+    @test check_edge_shape()
+    @test check_edge_style()
+    @test check_edge_arrow()
+    @test check_edge_text()
 end

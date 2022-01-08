@@ -71,3 +71,75 @@ function check_node_border()
 
     return t1
 end
+
+e = GraphEdge(1, 2, 1:2)
+f = GraphEdge(2, 1, 1:2)
+g = GraphEdge(2, 2, 1:2)
+
+function check_edge_shape()
+    style1 = edge_shape(end_offsets=(1, 1))
+    style2 = edge_shape(:curved)
+    style3 = edge_shape(:curved, end_offsets=(1, 1))
+
+    l_e = length(e.opts[:styles])
+    l_f = length(f.opts[:styles])
+    l_g = length(g.opts[:styles])
+
+    @add_styles e [style1]
+    @add_styles f [style2]
+    @add_styles g [style3]
+
+    render(Javis.CURRENT_VIDEO[1];tempdirectory = "images", pathname = "")
+
+    t1 = length(e.opts[:styles]) - l_e == 1 && haskey(e.object.opts, :shape)
+    t2 = length(f.opts[:styles]) - l_f == 1 && f.object.opts[:shape] == :curved
+    t3 = length(g.opts[:styles]) - l_g == 1 && g.object.opts[:end_offsets] == (1, 1)
+    return t1 && t2 && t3
+end
+
+function check_edge_style()
+    style = edge_style()
+
+    l_e = length(e.opts[:styles])
+
+    @add_styles e [style]
+
+    render(Javis.CURRENT_VIDEO[1];tempdirectory = "images", pathname = "")
+
+    t1 = length(e.opts[:styles]) - l_e == 1 && haskey(e.object.opts, :color)
+    return t1
+end
+
+function check_edge_arrow()
+    style1 = edge_arrow(start=true, finish=true)
+    style2 = edge_arrow(finish=true)
+    style3 = edge_arrow(start=true)
+
+    l_e = length(e.opts[:styles])
+    l_f = length(f.opts[:styles])
+    l_g = length(g.opts[:styles])
+
+    @add_styles e [style1]
+    @add_styles f [style2]
+    @add_styles g [style3]
+
+    render(Javis.CURRENT_VIDEO[1];tempdirectory = "images", pathname = "")
+
+    t1 = length(e.opts[:styles]) - l_e == 1 && haskey(e.object.opts, :arrow_color)
+    t2 = length(f.opts[:styles]) - l_f == 1 && f.object.opts[:arrow_finish] == true
+    t3 = length(g.opts[:styles]) - l_g == 1 && g.object.opts[:arrow_start] == true
+    return t1 && t2
+end
+
+function check_edge_text()
+    style1 = edge_text("test")
+
+    l_e = length(e.opts[:styles])
+
+    @add_styles e [style1]
+
+    render(Javis.CURRENT_VIDEO[1];tempdirectory = "images", pathname = "")
+
+    t1 = length(e.opts[:styles]) - l_e == 1 && haskey(e.object.opts, :text_content)
+    return t1
+end
