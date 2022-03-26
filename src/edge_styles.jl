@@ -79,6 +79,7 @@ end
 function edge_text(text_content; position::Real = 0.5, offset::Real = 2)
     draw = (video, object, frame; text_content=text_content, position=position, offset=offset, outline, kwargs...) ->  begin
         # ToDo: What to do for bezier curved edges?
+        # ToDo: Add edge label rotation
         # Align text along edge
         if outline == [O, O]
             return

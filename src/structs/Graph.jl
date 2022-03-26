@@ -144,8 +144,8 @@ end
 function _global_property_limits(video, object, frames; kwargs...)
     g = GRAPHS[object.opts[:_graph_idx]]
     for el in g.ordering
-        get_property = typeof(el) <: AbstractGraphVertex ? g.graph.get_node_property : g.graph.get_edge_property
-        limits = typeof(el) <: AbstractGraphVertex ? g.graph.node_property_limits : g.graph.edge_property_limits
+        get_property = typeof(el) <: AbstractGraphVertex ? g.graph.get_vertex_property : g.graph.get_edge_property
+        limits = typeof(el) <: AbstractGraphVertex ? g.graph.vertex_property_limits : g.graph.edge_property_limits
         for (k, _) in el.style_property_map
             val = get_property(k)
             if !(typeof(val) <: Real)

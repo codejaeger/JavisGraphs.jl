@@ -1,16 +1,3 @@
-struct Styles
-    # explore if a nameless field works here
-    styles::Vector{Function}
-end
-
-struct Attributes
-    attributes::Dict{Symbol, Any}
-end
-
-struct StyleMap
-    stylemap::Dict{Symbol, Symbol}
-end
-
 function get_draw(s::Symbol, custom_draw::Function)
     return (args...) -> begin
         custom_draw(args...)
@@ -73,4 +60,22 @@ end
 
 function degreetoradians(angle::Float64)
     return angle/180 * pi
+end
+
+function create_graph(g::Graphs.AbstractGraph, frames=:automatic; animate=false)
+#    return JGraph()
+end
+
+"""
+Use julia matrix
+>>> matrix = [[1 1 1]; [2 2 2]]
+"""
+function graph_from_matrix(adjacency_matrix)
+    sparse_mat = SparseMatrixCSC(adjacency_matrix)
+    nv = size(sparse_mat)[1]
+    g = transpose(sparse_mat) == sparse_mat ? SimpleGraph(nv) : SimpleDiGraph(nv)
+    for ij in findall(!iszero, sparse_mat)
+        add_edge!(g, ij[1], ij[2])
+    end
+    return g
 end

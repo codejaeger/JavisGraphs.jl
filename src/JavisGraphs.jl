@@ -3,12 +3,13 @@ module JavisGraphs
 import Base
 using Javis: isempty, Frames, get_frames, AbstractObject
 using Javis
-import Javis: text
+import Javis: text, setopacity, setline, setdash, setfont, sethue
 using Graphs
 import Graphs: weights, add_vertex!, rem_vertex!, add_edge!, rem_edge!
 using LaTeXStrings
 using GraphPlot
 using LinearAlgebra
+using SparseArrays: SparseMatrixCSC
 
 abstract type AbstractJavisGraphElement end
 abstract type AbstractJavisGraph <: AbstractJavisGraphElement end
@@ -25,8 +26,12 @@ include("structs/GraphVertex.jl")
 include("structs/GraphEdge.jl")
 
 include("node_styles.jl")
+include("vertex_animations.jl")
 include("edge_styles.jl")
-include("graph_animations.jl")
+include("edge_animations.jl")
+
+include("animations.jl")
+include("overrides.jl")
 
 # Export each function from Javis
 for func in names(Javis; imported = true)
