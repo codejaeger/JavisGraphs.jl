@@ -76,3 +76,36 @@ function check_register_style_opts()
     @register_style_opts v.object a b c
     return v.object.opts[:_style_opts_cache][:a] == 1 && v.object.opts[:_style_opts_cache][:b] == 2 && v.object.opts[:_style_opts_cache][:c] == 3
 end
+
+function check_graph_from_matrix()
+    directed_adjacency_matrix = [[1 1]; [0 0]]
+    g1 = graph_from_matrix(directed_adjacency_matrix)
+    ref_g1 = SimpleDiGraph(2)
+    add_edge!(ref_g1, 1, 1)
+    add_edge!(ref_g1, 1, 2)
+
+    undirected_adjacency_matrix = [[1 0]; [0 1]]
+    g2 = graph_from_matrix(undirected_adjacency_matrix)
+    ref_g2 = SimpleGraph(2)
+    add_edge!(ref_g2, 1, 1)
+    add_edge!(ref_g2, 2, 2)
+    return g1 == ref_g1 && g2 == ref_g2
+end
+
+function check_vertex_out_of_parent_range()
+    v = Video(10, 10)
+    Background(1:100, (args...)->O)
+    jg = JGraph(true, 200, 200, 1:50)
+    warn_string = "Child 1 frame range 1:80 out of parent graph range 1:50"
+    @test_warn warn_string GraphVertex(1, 1:80)
+end
+
+function check_edge_out_of_parent_range()
+    v = Video(10, 10)
+    Background(1:100, (args...)->O)
+    jg = JGraph(true, 200, 200, 1:50)
+    v1 = GraphVertex(1, 1:2)
+    v2 = GraphVertex(2, 1:2)
+    warn_string = "Child 1 => 2 frame range 1:80 out of parent graph range 1:50"
+    @test_warn warn_string GraphEdge(1, 2, 1:80)
+end

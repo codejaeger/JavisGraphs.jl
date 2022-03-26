@@ -53,6 +53,6 @@ for func in names(Graphs; imported = true)
     eval(Expr(:export, func))
 end
 
-export convert, @add_styles, @register_style_opts
+export convert, @add_styles, @register_style_opts, graph_from_matrix
 
 end # module

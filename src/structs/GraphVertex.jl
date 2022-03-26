@@ -72,7 +72,7 @@ function GraphVertex(
     frames;
     kwargs...
 )
-    # ToDo: Add warning for out of graph frames nodes
+    check_frames_within(jg.object.frames, frames, vertex_id)
     object = Object(frames, get_draw(:vertex); kwargs...)
     return GraphVertex(jg, vertex_id, object; kwargs...)
 end
@@ -82,6 +82,7 @@ function GraphVertex(
     vertex_id::Integer,
     object::AbstractObject;
     animate_on::Symbol = :opacity,
+    start_pos::Point = O,
     style_property_map::Dict{Any,Symbol} = Dict{Any,Symbol}()
 )
     if jg.mode == :static
@@ -90,6 +91,9 @@ function GraphVertex(
         end
         object.opts[:_graph_idx] = jg.object.opts[:_graph_idx]
         object.opts[:_vertex_idx] = length(GRAPH_VERTICES) + 1
+        if jg.layout == :none
+            object.opts[:position] = start_pos
+        end
         # ToDo: Create a mapping for vertex ids here
         # vertex id for the graph vertex need not be same as vertex id for adjacency graph
         # vertex_id = object.opts[:_vertex_idx] # this breaks test

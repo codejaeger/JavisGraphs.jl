@@ -79,7 +79,7 @@ function GraphEdge(
     frames;
     kwargs...
 )
-    # ToDo: Add warning for out of graph frames edges
+    check_frames_within(jg.object.frames, frames, from_vertex => to_vertex)
     object = Object(frames, get_draw(:edge); kwargs...)
     return GraphEdge(jg, from_vertex, to_vertex, object; kwargs...)
 end

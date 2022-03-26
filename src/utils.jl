@@ -79,3 +79,19 @@ function graph_from_matrix(adjacency_matrix)
     end
     return g
 end
+
+"""
+    check_frames_within(parent_frames, child_frames)
+
+Checks if child frames are contained within parent frame to ensure parent-child ownership.
+If not, throws a mild warning.
+"""
+function check_frames_within(parent_frames, child_frames, child_id="")
+    child_frame_range = (child_frames isa Javis.Frames ? child_frames.frames : child_frames)
+    parent_frame_range = (parent_frames isa Javis.Frames ? parent_frames.frames : parent_frames)
+    if parent_frame_range isa UnitRange && child_frame_range isa UnitRange
+        if !(child_frame_range ⊆ parent_frame_range)
+            @warn "Child $(child_id) frame range $(child_frame_range) out of parent graph range $(parent_frame_range)"
+        end
+    end
+end

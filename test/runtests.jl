@@ -32,6 +32,9 @@ include("utils.jl")
     @test check_get_edges_ordered()
     @test check_get_vertices()
     @test check_get_draw()
+    @test check_graph_from_matrix()
+    check_vertex_out_of_parent_range()
+    check_edge_out_of_parent_range()
 end
 
 include("render.jl")

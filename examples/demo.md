@@ -1,5 +1,5 @@
 ```julia
-using Javis, LaTeXStrings
+using JavisGraphs, LaTeXStrings
 
 function edge(; p1, p2, kwargs...)
     # sethue("black")
@@ -11,10 +11,10 @@ function edge(; p1, p2, kwargs...)
     clipreset()
 end
 
-function node(p=O, color="black")
+function vertex(position=O, color="black")
     sethue(color)
-    circle(p, 10, :fill)
-    return p
+    circle(position, 10, :fill)
+    return position
 end
 
 function ground(args...) 
@@ -23,37 +23,39 @@ function ground(args...)
 end
 
 video = Video(400, 400)
-Background(1:150, ground)
+Background(1:300, ground)
 
-g = @Object 1:150 JGraph(true, 100, 100) O
+g = JGraph(true, 300, 300, O, 1:150; layout=:spring)
 
 adjacency_list = [[2, 3, 4, 5, 6],
                   [7, 8],
                   [7, 8],
                   [],[],[],[],[]]
+
 for i in 1:length(adjacency_list)
     if i%2 == 0
-        @Graph g i*10:150 GraphVertex(i, [node_shape(:circle, true, radius=12), node_fill(:image, "football.png")]) O
+        v = GraphVertex(i, i*10:300)
+        @add_styles v [vertex_shape(:circle, true; dimensions=Tuple(12)),
+                       vertex_fill(:image, "./examples/football.png"),
+                       ]
     else
-        @Graph g i*10:150 GraphVertex(i, [node_shape(:rectangle, true, width=20, height=20), node_fill(:color, "yellow"), node_text(L"""%$i""", :inside), node_border("green", 2)]) O
-    end
-end
-# , node_text("$(i)", :top)
-global count = 0
-for i in 1:length(adjacency_list)
-    for j in adjacency_list[i]
-        @Graph g 15+count*10:150 GraphEdge(i, j, [edge_shape(:curved, false; center_offset=5, end_offsets=(15, 15))]) O
-        count+=1
+        v = GraphVertex(i, 15+i*10:300)
+        @add_styles v [vertex_shape(:rectangle, true; dimensions=(20, 20)),
+                        vertex_text(L"""%$i""", :inside),
+                        vertex_fill(:color, "yellow"),
+                       vertex_border("green", 2)
+                       ]
     end
 end
 
-# c = 5
-# i = 1
-# j = 2
-# g2 = @Object 1:150 JGraph(true, 100, 100) O
-# @Graph g2 c*10:150 GraphVertex(i, (args...; kw...)->node()) O
-# @Graph g2 c*10:150 GraphVertex(j, (args...; kw...)->node()) O
-# @Graph g2 c*10:150 GraphEdge(i, j, (args...; kw...)->edge(; kw...)) O
+count = 0
+for i in 1:length(adjacency_list)
+    for j in adjacency_list[i]
+        e = GraphEdge(i, j, 50+count*10:300)
+        @add_styles e [edge_style(), edge_shape(:curved)]
+        count+=1
+    end
+end
 
 render(video; pathname="demo.gif")
 ```
