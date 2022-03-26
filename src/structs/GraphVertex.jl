@@ -72,6 +72,7 @@ function GraphVertex(
     frames;
     kwargs...
 )
+    # ToDo: Add warning for out of graph frames nodes
     object = Object(frames, get_draw(:vertex); kwargs...)
     return GraphVertex(jg, vertex_id, object; kwargs...)
 end

@@ -27,9 +27,13 @@ for extend in [
     :inneighbors,
     :has_vertex,
     :has_edge,
+    :add_vertex!,
+    :add_edge!,
+    :rem_vertex!,
+    :rem_edge!
 ]
     eval(quote
-        LightGraphs.$extend(wg::WeightedGraph, args...) = $extend(wg.graph, args...)
+        Graphs.$extend(wg::WeightedGraph, args...) = $extend(wg.graph, args...)
     end)
 end
 
@@ -37,10 +41,8 @@ end
     add_vertex!(wg::WeightedGraph)
     add_vertex!(wg::WeightedGraph, weight::Any)
 """
-add_vertex!(wg::WeightedGraph) = add_vertex!(wg.graph)
-
-function add_vertex!(wg::WeightedGraph, weight::Any)
-    check = add_vertex!(wg.graph)
+function Graphs.add_vertex!(wg::WeightedGraph, weight::Any)
+    check = Graphs.add_vertex!(wg.graph)
     if check
         wg.node_w[nv(wg.graph)] = weight
     end
@@ -50,8 +52,8 @@ end
 """
     rem_vertex!(wg::WeightedGraph, node)
 """
-function rem_vertex!(wg::WeightedGraph{T}, node::T) where {T}
-    check = rem_vertex!(wg.graph, node)
+function Graphs.rem_vertex!(wg::WeightedGraph{T}, node::T) where {T}
+    check = Graphs.rem_vertex!(wg.graph, node)
     if check
         for i in node:nv(wg.graph)
             if i == nv(wg.graph)
@@ -68,11 +70,8 @@ end
     add_edge!(wg::WeightedGraph, from_node, to_node)
     add_edge!(wg::WeightedGraph, from_node, to_node, weight::Any)
 """
-add_edge!(wg::WeightedGraph{T}, from_node::T, to_node::T) where {T} =
-    add_edge!(wg.graph, from_node, to_node)
-
-function add_edge!(wg::WeightedGraph{T}, from_node::T, to_node::T, weight::Any) where {T}
-    check = add_edge!(wg.graph, from_node, to_node)
+function Graphs.add_edge!(wg::WeightedGraph{T}, from_node::T, to_node::T, weight::Any) where {T}
+    check = Graphs.add_edge!(wg.graph, from_node, to_node)
     if check
         wg.edge_w[(from_node, to_node)] = weight
     end
@@ -82,8 +81,8 @@ end
 """
     rem_edge!(wg::WeightedGraph{T}, from_node, to_node)
 """
-function rem_edge!(wg::WeightedGraph{T}, from_node::T, to_node::T) where {T}
-    check = rem_egde!(wg.graph, from_node, to_node)
+function Graphs.rem_edge!(wg::WeightedGraph{T}, from_node::T, to_node::T) where {T}
+    check = Graphs.rem_egde!(wg.graph, from_node, to_node)
     if check
         delete!(wg.edge_w, (from_node, to_node))
     end

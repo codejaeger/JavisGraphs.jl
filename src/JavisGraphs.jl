@@ -4,10 +4,11 @@ import Base
 using Javis: isempty, Frames, get_frames, AbstractObject
 using Javis
 import Javis: text
-using LightGraphs
-import LightGraphs: weights, add_vertex!, rem_vertex!, add_edge!, rem_edge!
+using Graphs
+import Graphs: weights, add_vertex!, rem_vertex!, add_edge!, rem_edge!
 using LaTeXStrings
 using GraphPlot
+using LinearAlgebra
 
 abstract type AbstractJavisGraphElement end
 abstract type AbstractJavisGraph <: AbstractJavisGraphElement end
@@ -37,13 +38,13 @@ export JGraph, WeightedGraph, ReferenceGraph, GraphVertex, GraphEdge
 
 export edges, vertices, register_style_opts, add_styles, get_draw
 
-export node_shape, node_text, node_fill, node_border
+export node_shape, node_text_style, node_text, node_fill, node_border
 
 export edge_shape, edge_style, edge_arrow, edge_text
 
 # Export each function from Luxor
-for func in names(LightGraphs; imported = true)
-    eval(Meta.parse("import LightGraphs." * string(func)))
+for func in names(Graphs; imported = true)
+    eval(Meta.parse("import Graphs." * string(func)))
     eval(Expr(:export, func))
 end
 

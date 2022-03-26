@@ -6,5 +6,6 @@ version = "0.1.0"
 [deps]
 GraphPlot = "a2cc645c-3eea-5389-862e-a155d0052231"
 Javis = "78b212ba-a7f9-42d4-b726-60726080707e"
-LightGraphs = "093fc24a-ae57-5d10-9952-331d41423f4d"
+Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"

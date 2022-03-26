@@ -69,3 +69,8 @@ macro register_style_opts(component, style_opts...)
         end
     end 
 end
+
+
+function degreetoradians(angle::Float64)
+    return angle/180 * pi
+end

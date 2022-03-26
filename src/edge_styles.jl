@@ -1,6 +1,13 @@
 function edge_shape(shape::Symbol=:line; center_offset::Real = 3, end_offsets::Tuple{Real, Real} = (0, 0))
-    draw = (video, object, frame; shape=shape, center_offset=center_offset, end_offsets=end_offsets, p1, p2, from_vertex_bbx, to_vertex_bbx, styling=false, kwargs...) -> begin
+    draw = (video, object, frame; shape=shape, center_offset=center_offset, end_offsets=end_offsets, p1, p2, from_vertex_bbx, to_vertex_bbx, kwargs...) -> begin
         # Calculate  edge segment outside of vertex boundaries
+        # ToDo: 
+        #   1. For curved edges choose _p1 and _p2 using intersection circle-arc
+        #   2. For node objects other than circle find a intersection of polygon and line
+        #   3. [FIX] When ther are self loops sometimes self loop passes through the node
+        # Known bug: If the gap between nodes are too less neither of the intersection 
+        #   points lie within the line connecting p1 and p2 hence ispointline fails
+        # Temporary fix: Make sure there is enough gaps within 2 node objects
         self_loop = get(Dict(collect(kwargs)...), :self_loop, false)
         _, ip1, ip2 = intersectionlinecircle(p1, p2, p1, distance(O, (from_vertex_bbx[2]-from_vertex_bbx[1])/2))
         _p1 = ispointonline(ip1, ip2, (p1+p2)/2; extended=false) ? ip1 : ip2
@@ -18,21 +25,20 @@ function edge_shape(shape::Symbol=:line; center_offset::Real = 3, end_offsets::T
         else
             outline = draw_straight_edge(_p1, _p2, center_offset, end_offsets)
         end
-        !styling ? poly(outline, :stroke) : nothing
+        poly(outline, :stroke)
         @register_style_opts object shape center_offset end_offsets outline
     end
     return draw
 end
 
-function edge_style(; color="red", linewidth::Real=2, dash::String="solid", blend="on")
+function edge_style(; color="red", linewidth::Real=2, dash::String="dotted", blend="on")
     styling = true
-    draw = (video, object, frame; linewidth=linewidth, dash=dash, color=color, blend=blend, styling=styling, outline, kwargs...) -> begin
+    draw = (video, object, frame; linewidth=linewidth, dash=dash, color=color, blend=blend, styling=styling, kwargs...) -> begin
         # ToDo: Allow a list of colors, linewidths, dash to be specified.
         # Interpolate in between when blend option is turned on
         sethue(color)
         setline(linewidth)
         setdash(dash)
-        poly(outline, :stroke)
         @register_style_opts object color linewidth dash blend styling
     end
     return draw
@@ -56,6 +62,16 @@ function edge_arrow(; start=nothing, finish=nothing, color="black")
             Luxor.arrow(outline[l-1:l]...)
         end
         @register_style_opts object arrow_start arrow_finish arrow_color
+    end
+    return draw
+end
+
+function edge_text_style(; color="black", fonttype="Times Roman", fontsize=10, opacity=0.8)
+    draw = (video, object, frame; text_color=color, fonttype=fonttype, fontsize=fontsize, text_opacity=opacity, kwargs...) -> begin
+        sethue(text_color)
+        setfont(fonttype, fontsize)
+        setopacity(text_opacity)
+        @register_style_opts object text_color fonttype fontsize text_opacity
     end
     return draw
 end
@@ -147,6 +163,7 @@ function largest_circle_sector(c::Point, pts::Vector{Point})
 end
 
 # # ToDo: Needs fixes
+# Add this to Luxor
 # function intersectioncircleboundingbox(c::Point, radius::Real, upperleft::Point, lowerright::Point)
 #     # Find the closest corner of box to the center of the circle
 #     px = abs(lowerright[1] - c[1]) < abs(upperleft[1] - c[1]) ? lowerright[1] : upperleft[1]

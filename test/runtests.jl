@@ -1,6 +1,6 @@
 using Test
 using JavisGraphs
-using LightGraphs
+using Graphs
 using GraphPlot
 using LaTeXStrings
 

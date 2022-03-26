@@ -7,7 +7,7 @@ This will be a part of the Javis [`Object`](@ref) metadata, when a new graph is 
 
 # Fields
 - `adjacency_list`: A light internal representation of the graph structure. Can be initialized with a known graph type.
-    - For undirected graphs the underlying graph type used is `SimpleGraph` from [LightGraphs.jl]() and for directed graphs it is `SimpleDiGraph`.
+    - For undirected graphs the underlying graph type used is `SimpleGraph` from [Graphs.jl]() and for directed graphs it is `SimpleDiGraph`.
 - `width::Int`: The width of the graph on the canvas.
 - `height::Int`: The height of the graph on the canvas.
 - `mode::Symbol`: The animation of the graph can be done in two ways.
@@ -48,13 +48,13 @@ CURRENT_GRAPH = Array{AbstractJavisGraph, 1}()
 
 Create an empty graph on the canvas.
 """
-JGraph(directed::Bool, width::Int, height::Int, frames=:same) =
-    directed ? JGraph(ReferenceGraph(LightGraphs.SimpleDiGraph()), width, height, frames) :
-    JGraph(ReferenceGraph(LightGraphs.SimpleGraph()), width, height, frames)
-
 JGraph(directed::Bool, width::Int, height::Int, frames=:same; layout::Symbol=:spring) =
-    directed ? JGraph(ReferenceGraph(LightGraphs.SimpleDiGraph()), width, height, frames; layout=layout) :
-    JGraph(ReferenceGraph(LightGraphs.SimpleGraph()), width, height, frames; layout=layout)
+    directed ? JGraph(ReferenceGraph(Graphs.SimpleDiGraph()), width, height, frames; layout=layout) :
+    JGraph(ReferenceGraph(Graphs.SimpleGraph()), width, height, frames; layout=layout)
+
+JGraph(directed::Bool, width::Int, height::Int, start_pos::Point, frames=:same; layout::Symbol=:spring) =
+    directed ? JGraph(ReferenceGraph(Graphs.SimpleDiGraph()), width, height, frames, start_pos; layout=layout) :
+    JGraph(ReferenceGraph(Graphs.SimpleGraph()), width, height, frames, start_pos; layout=layout)
 
 """
     JGraph(graph, width::Int, height::Int; <keyword arguments>)
@@ -63,7 +63,7 @@ Creates a Javis object for the graph and assigns its `Metadata` field to the obj
 
 # Arguments
 - `graph`: A known data structure storing information about nodes, edges, properties, etc.
-    - Graph types of type `AbstractGraph` from the [LightGraphs.jl]() package are supported.
+    - Graph types of type `AbstractGraph` from the [Graphs.jl]() package are supported.
     - Using this eliminates the requirement to create nodes and edges separately.
 - `width::Int`: Size of the graph along the horizontal direction.
 - `height::Int`: Size of the graph along the vertical direction.
@@ -102,7 +102,8 @@ function JGraph(
     graph::ReferenceGraph,
     width::Int,
     height::Int,
-    frames=:same;
+    frames=:same,
+    start_pos::Point=O;
     mode::Symbol = :static,
     layout::Symbol = :spring
 )
@@ -117,7 +118,7 @@ function JGraph(
     elseif mode == :dynamic
         styles = [_global_property_limits]
     end
-    object = Object(frames, get_draw(:graph); _graph_idx = length(GRAPHS)+1)
+    object = Object(frames, get_draw(:graph), start_pos; _graph_idx = length(GRAPHS)+1)
     opts = Dict{Symbol, Any}()
     opts[:styles] = styles
     object.opts[:_style_opts_cache] = Dict{Symbol, Any}()
@@ -158,7 +159,7 @@ function _global_property_limits(video, object, frames; kwargs...)
     end
 end
 
-function LightGraphs.edges(g::JGraph, in_order=false)
+function Graphs.edges(g::JGraph, in_order=false)
     e = []
     if !in_order
         return g.ordering[map(e -> get_prop(g.graph.adjacency_graph, src(e), dst(e)), edges(g.graph.adjacency_graph))]
@@ -171,7 +172,7 @@ function LightGraphs.edges(g::JGraph, in_order=false)
     return e
 end
 
-function LightGraphs.vertices(g::JGraph, in_order=false)
+function Graphs.vertices(g::JGraph, in_order=false)
     if !in_order
         return g.ordering[map(v -> get_prop(g.graph.adjacency_graph, v), vertices(g.graph.adjacency_graph))]
     end
@@ -184,8 +185,8 @@ function LightGraphs.vertices(g::JGraph, in_order=false)
     return v
 end
 
-function LightGraphs.neighbors(g::JGraph, v::Integer; strict=false)
-    n = copy(LightGraphs.neighbors(g.graph.adjacency_graph, v))
+function Graphs.neighbors(g::JGraph, v::Integer; strict=false)
+    n = copy(Graphs.neighbors(g.graph.adjacency_graph, v))
     if strict
         filter!(x -> x ≠ v, n)
     end
@@ -197,32 +198,29 @@ function _global_layout(video, object, frame; kwargs...)
     if frame == first(get_frames(object))
         layout_x = []
         layout_y = []
-        if g.layout == :spring
-            # Check due to some errors in calling spring_layout with an empty graph
-            if nv(g.graph.adjacency_graph) > 0
-                layout_x, layout_y = spring_layout(g.graph.adjacency_graph)
-            end
-        elseif g.layout == :spectral
-            # Check special property layout_weight is defined on edges and collect weights
-            weights = map(
-                (e) -> get(e.object.opts, :weight, 1),
-                edges(g, true),
-            )
-            if nv(g.graph.adjacency_graph) > 0
-                # Might be some bug in the order in which weights is passed
-                layout_x, layout_y = spectral_layout(g.graph.adjacency_graph, weights)
-            end
-        end
         if g.layout == :none
             object.opts[:layout_coords] = Vector{Point}()
             for v in vertices(g)
                 push!(object.opts[:layout_coords], v.object.opts[:position])
             end
         else
-            # Normalize coordinates between -0.5 and 0.5
-            coords = map((p) -> Point(p), collect(zip(layout_x, layout_y))) .- [(0.5, 0.5)]
+            if nv(g.graph.adjacency_graph) <= 1
+                layout_x, layout_y = [O], [O]
+            elseif g.layout == :spring
+                layout_x, layout_y = spring_layout(g.graph.adjacency_graph.graph)
+            elseif g.layout == :spectral
+                # Check special property layout_weight is defined on edges and collect weights
+                weights = map(
+                    (e) -> get(e.object.opts, :weight, 1),
+                    edges(g, true),
+                )
+                # ToDo: Why does just g.graph.adjacency_graph not work? (is_directed not implemented error)
+                layout_x, layout_y = spectral_layout(g.graph.adjacency_graph.graph, weights)
+            end
+            # Coordinates are between -1 and 1
+            coords = map((p) -> Point(p), collect(zip(layout_x, layout_y)))
             # Scale to graph dimensions
-            coords = coords .* [(g.width, g.height)]
+            coords = coords .* [(g.width/2, g.height/2)]
             object.opts[:layout_coords] = coords
         end
     end
@@ -234,9 +232,10 @@ function _global_layout(video, object, frame; kwargs...)
     for e in edges(g)
         from_vertex = g.ordering[get_prop(g.graph.adjacency_graph, e.from_vertex.vertex_id)]
         to_vertex = g.ordering[get_prop(g.graph.adjacency_graph, e.to_vertex.vertex_id)]
+        # ToDo: Do we need to set these?
         e.object.opts[:p1] = from_vertex.object.opts[:position]
         e.object.opts[:p2] = to_vertex.object.opts[:position]
-        e.object.opts[:from_vertex_bbx] = get(from_vertex.object.opts, :bounding_box, (O, O))
-        e.object.opts[:to_vertex_bbx] = get(to_vertex.object.opts, :bounding_box, (O, O))
+        e.object.opts[:from_vertex_bbx] = get(from_vertex.object.opts, :bounding_box, (O, O) .+ e.object.opts[:p1])
+        e.object.opts[:to_vertex_bbx] = get(to_vertex.object.opts, :bounding_box, (O, O) .+ e.object.opts[:p2])
     end
 end
