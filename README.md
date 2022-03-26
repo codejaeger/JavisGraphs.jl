@@ -10,7 +10,7 @@ A network graph plotting utility based on Javis
 ToDo:
 
 ##### Most significants
-* Add tests & cleanup
+* Add ~~tests &~~ cleanup
 * Rename node to vertex everywhere
 * Add a :scale parameter for drawing - node_shape and edge_shape
 * Change layout package to networklayout.jl

@@ -25,7 +25,7 @@ include("structs/Graph.jl")
 include("structs/GraphVertex.jl")
 include("structs/GraphEdge.jl")
 
-include("node_styles.jl")
+include("vertex_styles.jl")
 include("vertex_animations.jl")
 include("edge_styles.jl")
 include("edge_animations.jl")
@@ -43,7 +43,7 @@ export JGraph, WeightedGraph, ReferenceGraph, GraphVertex, GraphEdge
 
 export edges, vertices, register_style_opts, add_styles, get_draw
 
-export node_shape, node_text_style, node_text, node_fill, node_border
+export vertex_shape, vertex_text_style, vertex_text, vertex_fill, vertex_border
 
 export edge_shape, edge_style, edge_arrow, edge_text
 

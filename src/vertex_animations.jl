@@ -11,7 +11,7 @@ function Javis.setopacity(v::GraphVertex, opacity; frames=:automatic)
 end
 
 """
-add a :scale property to node_shape and edge_shape
+add a :scale property to vertex_shape and edge_shape
 """
 function setscale(v::GraphVertex, opacity; frames=:automatic)
 end

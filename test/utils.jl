@@ -46,7 +46,7 @@ function test_style1(video, object, args...; kw...)
     object.opts[:dummy] = true
 end
 
-function dummy_node_shape()
+function dummy_vertex_shape()
     return (args...; kwargs...) -> ()
 end
 
@@ -61,7 +61,7 @@ function check_add_styles()
 
     @add_styles v [(() -> ((args...; kw...) -> style(args...; kw...)))()]
 
-    @add_styles v [dummy_node_shape()]
+    @add_styles v [dummy_vertex_shape()]
 
     return length(v.opts[:styles]) == 4
 end

@@ -2,12 +2,12 @@ style_graph = create_graph()
 v = GraphVertex(1, 1:2)
 w = GraphVertex(2, 1:2)
 
-function check_node_shape()
-    t1 = typeof(@test_throws ArgumentError node_shape(:rectangle)) == Test.Pass
-    t2 = typeof(@test_throws ArgumentError node_shape(:circle)) == Test.Pass
+function check_vertex_shape()
+    t1 = typeof(@test_throws ArgumentError vertex_shape(:rectangle)) == Test.Pass
+    t2 = typeof(@test_throws ArgumentError vertex_shape(:circle)) == Test.Pass
     
-    style1 = node_shape(:rectangle; dimensions=(1, 2))
-    style2 = node_shape(:circle; dimensions=Tuple(1))
+    style1 = vertex_shape(:rectangle; dimensions=(1, 2))
+    style2 = vertex_shape(:circle; dimensions=Tuple(1))
     
     l_v = length(v.opts[:styles])
     l_w = length(w.opts[:styles])
@@ -22,9 +22,9 @@ function check_node_shape()
     return t1 && t2 && t3 && t4
 end
 
-function check_node_text()
-    style1 = node_text("text")
-    style2 = node_text(L"text")
+function check_vertex_text()
+    style1 = vertex_text("text")
+    style2 = vertex_text(L"text")
     
     l_v = length(v.opts[:styles])
     l_w = length(w.opts[:styles])
@@ -40,9 +40,9 @@ function check_node_text()
     return t1 && t2
 end
 
-function check_node_fill()
-    style1 = node_fill(:image, "julia-logo.png")
-    style2 = node_fill(:color, "red")
+function check_vertex_fill()
+    style1 = vertex_fill(:image, "julia-logo.png")
+    style2 = vertex_fill(:color, "red")
 
     l_v = length(v.opts[:styles])
     l_w = length(w.opts[:styles])
@@ -58,8 +58,8 @@ function check_node_fill()
     return t1 && t2
 end
 
-function check_node_border()
-    style = node_border()
+function check_vertex_border()
+    style = vertex_border()
 
     l_v = length(v.opts[:styles])
 

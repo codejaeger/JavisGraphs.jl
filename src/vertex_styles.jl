@@ -1,12 +1,12 @@
 # """
-#     node_shape(shape::Symbol, clip::Bool; <keyword arguments>)
+#     vertex_shape(shape::Symbol, clip::Bool; <keyword arguments>)
 
-# Create an outline for the graph node. Also, can define a clipping region for the node region.
+# Create an outline for the graph vertex. Also, can define a clipping region for the vertex region.
 
 # Returns a dictionary of drawing options and a callable draw function (in this order).
 
 # # Arguments
-# - `shape::Symbol`: Specify a node shape among `:circle`, `:rectangle` or a `:polygon` (to be implemented).
+# - `shape::Symbol`: Specify a vertex shape among `:circle`, `:rectangle` or a `:polygon` (to be implemented).
 # - `clip::Bool`: Define a clipping region over the region defined by `shape`.
 
 # # Keywords
@@ -14,15 +14,15 @@
 # - `width`: Specify if shape is `:rectangle`.
 # - `height`: Specify if shape is `:rectangle`.
 # """
-function node_shape(shape::Symbol=:circle, clip::Bool=false; dimensions=())
+function vertex_shape(shape::Symbol=:circle, clip::Bool=false; dimensions=())
     if !(dimensions isa Tuple)
         dimensions = Tuple(dimensions)
     end
     dimensions = Tuple(dimensions)
     if shape == :rectangle && length(dimensions) != 2
-        throw(ArgumentError("Rectangle must have 2 dimensions (width, height) provided for node shape."))
+        throw(ArgumentError("Rectangle must have 2 dimensions (width, height) provided for vertex shape."))
     elseif shape == :circle && length(dimensions) != 1
-        throw(ArgumentError("Circle must have 1 dimension (radius) provided for node shape."))
+        throw(ArgumentError("Circle must have 1 dimension (radius) provided for vertex shape."))
     end
     draw = (video, object, frame; shape=shape, dimensions=dimensions, clip=clip, position, kwargs...) -> begin
         Luxor.newpath()
@@ -46,7 +46,7 @@ function node_shape(shape::Symbol=:circle, clip::Bool=false; dimensions=())
     return draw
 end
 
-function node_text_style(; color="black", fonttype="Times Roman", fontsize=10, opacity=0.8)
+function vertex_text_style(; color="black", fonttype="Times Roman", fontsize=10, opacity=0.8)
     draw = (video, object, frame; text_color=color, fonttype=fonttype, fontsize=fontsize, text_opacity=opacity, kwargs...) -> begin
         sethue(text_color)
         setfont(fonttype, fontsize)
@@ -58,13 +58,13 @@ end
 
 
 # """
-#     node_text(text::AbstractString, offset::Point, color)
-#     node_text(text::LaTeXString, offset::Point, color)
+#     vertex_text(text::AbstractString, offset::Point, color)
+#     vertex_text(text::LaTeXString, offset::Point, color)
 
-# Label a node with text (or latex), which is also rotated to match the direction specified by `offset`.
+# Label a vertex with text (or latex), which is also rotated to match the direction specified by `offset`.
 
 # # Arguments
-# - `offset::Point`: Specify the offset of the text label with respect to the node center.
+# - `offset::Point`: Specify the offset of the text label with respect to the vertex center.
 #     - The text is translated and rotated in the direction of the offset.
 # - `color`: The color of the text. Default is "black".
 # - `shift::Real`: Indicates the shift w.r.t the offset direction.
@@ -72,7 +72,7 @@ end
 #     - Default shift is 1.
 # """
 
-function node_text(text_content, align::Symbol; shift::Real=10, angle::Float64=0.0, fit_to_bbox=false)
+function vertex_text(text_content, align::Symbol; shift::Real=10, angle::Float64=0.0, fit_to_bbox=false)
     outside = Tuple(normalize((rand(1, 2))))
     find_shift = (video, object, frame; text_align=align, shift=shift, bounding_box, kwargs...) -> begin
         text_box = bounding_box
@@ -94,7 +94,7 @@ function node_text(text_content, align::Symbol; shift::Real=10, angle::Float64=0
         return text_shift
     end
     
-    draw = node_text(text_content; angle=angle, fit_to_bbox=fit_to_bbox)
+    draw = vertex_text(text_content; angle=angle, fit_to_bbox=fit_to_bbox)
 
     return (args...; text_shift=(O, O), kwargs...) -> 
         begin 
@@ -104,24 +104,24 @@ function node_text(text_content, align::Symbol; shift::Real=10, angle::Float64=0
 end
 
 # """
-#     node_text(text::AbstractString, align::Symbol, color, offset::Real)
-#     node_text(text::LaTeXString, align::Symbol, color, offset::Real)
+#     vertex_text(text::AbstractString, align::Symbol, color, offset::Real)
+#     vertex_text(text::LaTeXString, align::Symbol, color, offset::Real)
 
-# Label a node with text or latex.
+# Label a vertex with text or latex.
 
 # # Arguments
-# - `align::Symbol`: Specify the alignment of the text label with respect to the node.
-#     - This position is determined with respect to the node `bounding_box` returned as a drawing option by [`node_shape`](@ref).
+# - `align::Symbol`: Specify the alignment of the text label with respect to the vertex.
+#     - This position is determined with respect to the vertex `bounding_box` returned as a drawing option by [`vertex_shape`](@ref).
 #     - Can take the values `:inside`, `:top`, `:bottom`, `:left`, `:right`. Default is `:inside`.
 # - `color`: The color of the text. Default is "black".
 # - `shift`: Used only when `align` is not `:inside`. Specifies an offset in the direction of `align`.
 # """
-function node_text(text_content; shift=(0, 0), angle::Float64=0.0, fit_to_bbox=false)
+function vertex_text(text_content; shift=(0, 0), angle::Float64=0.0, fit_to_bbox=false)
     draw = (video, object, frame; text_content=text_content, text_shift=shift, text_angle=angle, clip, bounding_box, kwargs...) -> begin
         kw = Dict{Symbol, Any}(collect(kwargs)...)
         text_align = get(kw, :text_align, :inside)
         fontsize = get(kw, :fontsize, 10)
-        # Text box is inistally derived from node bounding box
+        # Text box is inistally derived from vertex bounding box
         text_box = bounding_box
         if text_content isa Javis.LaTeXString
             svg = Javis.get_latex_svg(text_content)
@@ -141,7 +141,7 @@ function node_text(text_content; shift=(0, 0), angle::Float64=0.0, fit_to_bbox=f
             text_marker_align = (:center, :middle)
         else
             # ToDo: throw warning - Clip is ignored since text outside bounding box
-            text_marker_shift, text_marker_align = _node_text_shift(text_box, text_shift, text_align)
+            text_marker_shift, text_marker_align = _vertex_text_shift(text_box, text_shift, text_align)
             text_marker += text_marker_shift
         end
         scale(scl...)
@@ -168,7 +168,7 @@ function node_text(text_content; shift=(0, 0), angle::Float64=0.0, fit_to_bbox=f
     return draw
 end
 
-function _node_text_shift(text_box, shift, align)
+function _vertex_text_shift(text_box, shift, align)
     text_box_center = (text_box[1] + text_box[2])/2
     top_left = text_box[1] - text_box_center
     top_right = Point(text_box[2][1], text_box[1][2]) - text_box_center
@@ -199,15 +199,15 @@ function _node_text_shift(text_box, shift, align)
 end
 
 # """
-#     node_fill(fill_type::Symbol, fill_with::String)
+#     vertex_fill(fill_type::Symbol, fill_with::String)
 
-# Fill in the interior of the node with an image or a color.
+# Fill in the interior of the vertex with an image or a color.
 
 # # Arguments
 # - `fill_type::Symbol`: Can be `image` or `color`.
 # - `fill_with`: Can be a color like "red" or a image path in the same directory like "image.png".
 # """
-function node_fill(type::Symbol, with::String, opacity::Float64=0.5)
+function vertex_fill(type::Symbol, with::String, opacity::Float64=0.5)
     draw = (video, object, frame; fill_type=type, fill_with=with, fill_opacity=opacity, bounding_box, kwargs...) -> begin
         kw = Dict{Symbol, Any}(collect(kwargs)...)
         outline = get(kw, :outline, nothing)
@@ -234,9 +234,9 @@ function node_fill(type::Symbol, with::String, opacity::Float64=0.5)
 end
 
 # """
-#     node_border(color::String, border_width::Real)
+#     vertex_border(color::String, border_width::Real)
 
-# Create a border around the node shape.
+# Create a border around the vertex shape.
 
 # If the `:shape` is not specified, the `bounding_box` becomes the border.
 
@@ -244,7 +244,7 @@ end
 # - `color`: The color of the text. Default is "black".
 # - `border_width::Real`: The line width used for the border. Defualt is 3.
 # """
-function node_border(color="black", width::Real=3, opacity=0.7)
+function vertex_border(color="black", width::Real=3, opacity=0.7)
     draw = (video, object, frame; border_color=color, border_width=width, border_opacity=opacity, clip, position, shape, kwargs...) -> begin
         kw = Dict{Symbol, Any}(collect(kwargs)...)
         setline(border_width)

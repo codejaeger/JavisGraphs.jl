@@ -34,7 +34,7 @@ Remove a vertex from the canvas. The layout is regenerated depending upon the `m
 
 The function syntax chosen is similar to `Graphs.rem_vertex!`.
 """
-function Graphs.rem_vertex!(jg::JGraph, node::T) where {T}
+function Graphs.rem_vertex!(jg::JGraph, vertex::T) where {T}
 end
 
 """
@@ -54,5 +54,5 @@ Remove an edge from the canvas.
 
 The function syntax chosen is similar to `Graphs.rem_edge!`.
 """
-function Graphs.rem_edge!(jg::JGraph, from_node::T, to_node::T) where {T}
+function Graphs.rem_edge!(jg::JGraph, from_vertex::T, to_vertex::T) where {T}
 end
