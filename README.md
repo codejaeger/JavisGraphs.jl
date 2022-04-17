@@ -1,15 +1,22 @@
 # JavisGraphs
 A network graph plotting utility based on Javis
 
+![WIP](./assets/wip.jpg "Development takes time :)")
+
 **Development**
+
 `cd` into the JavisGraphs directory and `dev .`
 
 **Testing**
+
 `test JavisGraphs`
 
 ToDo:
 
 ##### Most significants
+* Support multiple interfaces for iterators, indexing, broadcasting for JavisGraph
+* Add support for arbitrary node ids types
+* Add support for indexing on Javis Graph based on node id or edge id (which is just a pair of node ids)
 * ~~Add test~~ & cleanup
 * ~~Rename node to vertex everywhere~~
 * Add a :scale parameter for drawing - node_shape and edge_shape
