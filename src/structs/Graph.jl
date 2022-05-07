@@ -49,12 +49,12 @@ CURRENT_GRAPH = Array{AbstractJavisGraph, 1}()
 Create an empty graph on the canvas.
 """
 JGraph(directed::Bool, width::Int, height::Int, frames=:same; layout::Symbol=:spring) =
-    directed ? JGraph(ReferenceGraph(Graphs.SimpleDiGraph()), width, height, frames; layout=layout) :
-    JGraph(ReferenceGraph(Graphs.SimpleGraph()), width, height, frames; layout=layout)
+    directed ? JGraph(ReferenceGraph(SimpleDiGraph()), width, height, frames; layout=layout) :
+    JGraph(ReferenceGraph(SimpleGraph()), width, height, frames; layout=layout)
 
 JGraph(directed::Bool, width::Int, height::Int, start_pos::Point, frames=:same; layout::Symbol=:spring) =
-    directed ? JGraph(ReferenceGraph(Graphs.SimpleDiGraph()), width, height, frames, start_pos; layout=layout) :
-    JGraph(ReferenceGraph(Graphs.SimpleGraph()), width, height, frames, start_pos; layout=layout)
+    directed ? JGraph(ReferenceGraph(SimpleDiGraph()), width, height, frames, start_pos; layout=layout) :
+    JGraph(ReferenceGraph(SimpleGraph()), width, height, frames, start_pos; layout=layout)
 
 """
     JGraph(graph, width::Int, height::Int; <keyword arguments>)
@@ -113,10 +113,11 @@ function JGraph(
         @warn "Unknown layout '$(layout)', defaulting to a spring layout"
     end
 
+    styles = OrderedDict{Symbol, Function}()
+    styles[:global_property_limits] = _global_property_limits
     if mode == :static
-        styles = [_global_property_limits, _global_layout]
-    elseif mode == :dynamic
-        styles = [_global_property_limits]
+        styles[:global_layout] = _global_layout
+    elseif mode == :dynamic        
     end
     object = Object(frames, get_draw(:graph), start_pos; _graph_idx = length(GRAPHS)+1)
     opts = Dict{Symbol, Any}()
@@ -186,7 +187,7 @@ function Graphs.vertices(g::JGraph, in_order=false)
 end
 
 function Graphs.neighbors(g::JGraph, v::Integer; strict=false)
-    n = copy(Graphs.neighbors(g.graph.adjacency_graph, v))
+    n = copy(neighbors(g.graph.adjacency_graph, v))
     if strict
         filter!(x -> x ≠ v, n)
     end

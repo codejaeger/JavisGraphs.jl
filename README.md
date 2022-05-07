@@ -51,5 +51,9 @@ Done
 * could not import errors when `using Revise; using JavisGraphs`
 
 
+#### Common Errors
+* `these two points are the same` - This error is very common when you have self-loops in graph and did not create a node of large enough size or completely forgot to define a shape for the node. The center and the end points of the node collapse into a single point and the error comes from arc function of Luxor.jl.
+
+
 
 

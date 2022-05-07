@@ -42,7 +42,7 @@ end
     add_vertex!(wg::WeightedGraph, weight::Any)
 """
 function Graphs.add_vertex!(wg::WeightedGraph, weight::Any)
-    check = Graphs.add_vertex!(wg.graph)
+    check = add_vertex!(wg.graph)
     if check
         wg.vertex_w[nv(wg.graph)] = weight
     end
@@ -53,7 +53,7 @@ end
     rem_vertex!(wg::WeightedGraph, vertex)
 """
 function Graphs.rem_vertex!(wg::WeightedGraph{T}, vertex::T) where {T}
-    check = Graphs.rem_vertex!(wg.graph, vertex)
+    check = rem_vertex!(wg.graph, vertex)
     if check
         for i in vertex:nv(wg.graph)
             if i == nv(wg.graph)
@@ -71,7 +71,7 @@ end
     add_edge!(wg::WeightedGraph, from_vertex, to_vertex, weight::Any)
 """
 function Graphs.add_edge!(wg::WeightedGraph{T}, from_vertex::T, to_vertex::T, weight::Any) where {T}
-    check = Graphs.add_edge!(wg.graph, from_vertex, to_vertex)
+    check = add_edge!(wg.graph, from_vertex, to_vertex)
     if check
         wg.edge_w[(from_vertex, to_vertex)] = weight
     end
@@ -82,7 +82,7 @@ end
     rem_edge!(wg::WeightedGraph{T}, from_vertex, to_vertex)
 """
 function Graphs.rem_edge!(wg::WeightedGraph{T}, from_vertex::T, to_vertex::T) where {T}
-    check = Graphs.rem_egde!(wg.graph, from_vertex, to_vertex)
+    check = rem_edge!(wg.graph, from_vertex, to_vertex)
     if check
         delete!(wg.edge_w, (from_vertex, to_vertex))
     end

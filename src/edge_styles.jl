@@ -28,7 +28,7 @@ function edge_shape(shape::Symbol=:line; center_offset::Real = 3, end_offsets::T
         poly(outline, :stroke)
         @register_style_opts object shape center_offset end_offsets outline
     end
-    return draw
+    return :edge_shape=>draw
 end
 
 function edge_style(; color="red", linewidth::Real=2, dash::String="dotted", blend="on")
@@ -41,7 +41,7 @@ function edge_style(; color="red", linewidth::Real=2, dash::String="dotted", ble
         setdash(dash)
         @register_style_opts object color linewidth dash blend styling
     end
-    return draw
+    return :edge_style=>draw
 end
 
 function edge_arrow(; start=nothing, finish=nothing, color="black")
@@ -63,7 +63,7 @@ function edge_arrow(; start=nothing, finish=nothing, color="black")
         end
         @register_style_opts object arrow_start arrow_finish arrow_color
     end
-    return draw
+    return :edge_arrow=>draw
 end
 
 function edge_text_style(; color="black", fonttype="Times Roman", fontsize=10, opacity=0.8)
@@ -73,7 +73,7 @@ function edge_text_style(; color="black", fonttype="Times Roman", fontsize=10, o
         setopacity(text_opacity)
         @register_style_opts object text_color fonttype fontsize text_opacity
     end
-    return draw
+    return :edge_text_style=>draw
 end
 
 function edge_text(text_content; position::Real = 0.5, offset::Real = 2)
@@ -100,7 +100,7 @@ function edge_text(text_content; position::Real = 0.5, offset::Real = 2)
         translate(-pt)
         @register_style_opts object text_content position offset
     end
-    return draw
+    return :edge_text=>draw
 end
 
 function draw_self_loop_edge(p1, from_vertex_bbx, center_offset, end_offsets, direction)

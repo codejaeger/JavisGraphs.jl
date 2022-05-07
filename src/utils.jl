@@ -11,7 +11,7 @@ function get_draw(s::Symbol)
                           s == :vertex ? GRAPH_VERTICES[object.opts[:_vertex_idx]] :
                                           GRAPH_EDGES[object.opts[:_edge_idx]]
         kw = merge(object.opts, Dict(collect(kwargs)...))
-        for style in l.opts[:styles]
+        for (_, style) in l.opts[:styles]
             style(video, object, frame; kw...)
             if frame == first(get_frames(object))
                 kw = merge(object.opts[:_style_opts_cache], kw)
@@ -39,7 +39,8 @@ macro add_styles(component, draw...)
         # if !haskey($(esc(component)).opts, :styles)
         #     $(esc(component)).opts[:styles] = Function[(args...; kw...) -> Luxor.clipreset()]
         # end
-        append!($(esc(component)).opts[:styles], [$(esc(draw...))...])
+        # append!($(esc(component)).opts[:styles], [$(esc(draw...))...])
+        merge!($(esc(component)).opts[:styles], OrderedDict(collect([$(esc(draw...))...])))
     end
 end
 
@@ -62,7 +63,7 @@ function degreetoradians(angle::Float64)
     return angle/180 * pi
 end
 
-function create_graph(g::Graphs.AbstractGraph, frames=:automatic; animate=false)
+function create_graph(g::AbstractGraph, frames=:automatic; animate=false)
 #    return JGraph()
 end
 
@@ -87,11 +88,15 @@ Checks if child frames are contained within parent frame to ensure parent-child 
 If not, throws a mild warning.
 """
 function check_frames_within(parent_frames, child_frames, child_id="")
-    child_frame_range = (child_frames isa Javis.Frames ? child_frames.frames : child_frames)
-    parent_frame_range = (parent_frames isa Javis.Frames ? parent_frames.frames : parent_frames)
+    child_frame_range = (child_frames isa Frames ? child_frames.frames : child_frames)
+    parent_frame_range = (parent_frames isa Frames ? parent_frames.frames : parent_frames)
     if parent_frame_range isa UnitRange && child_frame_range isa UnitRange
         if !(child_frame_range ⊆ parent_frame_range)
             @warn "Child $(child_id) frame range $(child_frame_range) out of parent graph range $(parent_frame_range)"
         end
     end
 end
+
+#=
+Debug utlities - frame amplify and frame marker with Javis liveviewer mode turned on.
+=#

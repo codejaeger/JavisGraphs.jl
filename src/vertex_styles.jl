@@ -43,7 +43,7 @@ function vertex_shape(shape::Symbol=:circle, clip::Bool=false; dimensions=())
         Luxor.closepath()
         @register_style_opts object shape dimensions clip bounding_box outline
     end
-    return draw
+    return :vertex_shape=>draw
 end
 
 function vertex_text_style(; color="black", fonttype="Times Roman", fontsize=10, opacity=0.8)
@@ -53,7 +53,7 @@ function vertex_text_style(; color="black", fonttype="Times Roman", fontsize=10,
         setopacity(text_opacity)
         @register_style_opts object text_color fonttype fontsize text_opacity
     end
-    return draw
+    return :vertex_text_style=>draw
 end
 
 
@@ -94,13 +94,13 @@ function vertex_text(text_content, align::Symbol; shift::Real=10, angle::Float64
         return text_shift
     end
     
-    draw = vertex_text(text_content; angle=angle, fit_to_bbox=fit_to_bbox)
+    _, draw = vertex_text(text_content; angle=angle, fit_to_bbox=fit_to_bbox)
 
-    return (args...; text_shift=(O, O), kwargs...) -> 
+    return :vertex_text=>((args...; text_shift=(O, O), kwargs...) -> 
         begin 
             text_shift = find_shift(args...; kwargs...);
             draw(args...; text_shift=text_shift, kwargs...)
-        end
+        end)
 end
 
 # """
@@ -123,9 +123,9 @@ function vertex_text(text_content; shift=(0, 0), angle::Float64=0.0, fit_to_bbox
         fontsize = get(kw, :fontsize, 10)
         # Text box is inistally derived from vertex bounding box
         text_box = bounding_box
-        if text_content isa Javis.LaTeXString
-            svg = Javis.get_latex_svg(text_content)
-            w, h = Javis.svgwh(svg)
+        if text_content isa LaTeXString
+            svg = get_latex_svg(text_content)
+            w, h = svgwh(svg)
         elseif text_content isa AbstractString
             ext = textextents(text_content)
             w, h = ext[3], ext[4]
@@ -146,7 +146,7 @@ function vertex_text(text_content; shift=(0, 0), angle::Float64=0.0, fit_to_bbox
         end
         scale(scl...)
         object.current_setting.fontsize = 60
-        if text_content isa Javis.LaTeXString
+        if text_content isa LaTeXString
             translate(text_marker/Tuple(scl))
             # Change to radians and negate to match rotate's convention
             rotate(-degreetoradians(angle))
@@ -165,7 +165,7 @@ function vertex_text(text_content; shift=(0, 0), angle::Float64=0.0, fit_to_bbox
         scale(1/scl[1], 1/scl[2])
         @register_style_opts object text_content text_box text_shift text_angle
     end
-    return draw
+    return :vertex_text=>draw
 end
 
 function _vertex_text_shift(text_box, shift, align)
@@ -230,7 +230,7 @@ function vertex_fill(type::Symbol, with::String, opacity::Float64=0.5)
         end
         @register_style_opts object fill_type fill_with fill_opacity
     end
-    return draw
+    return :vertex_fill=>draw
 end
 
 # """
@@ -267,5 +267,5 @@ function vertex_border(color="black", width::Real=3, opacity=0.7)
         end
         @register_style_opts object border_color border_width border_opacity
     end
-    return draw
+    return :vertex_border=>draw
 end

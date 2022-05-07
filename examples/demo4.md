@@ -19,7 +19,7 @@ for (i, j) in [(1, 1), (1, 2), (2, 1), (1, 3), (2, 2), (1, 4), (2, 5), (3, 5), (
     @add_styles e [edge_style(), edge_shape(:curved), edge_arrow(start=true), edge_text("$i->$j", position=0.6)]
 end
 
-render(demo; pathname="examples/example1.gif")
+render(demo; pathname="demo4.gif")
 ```
 
 ![Demo](demo4.gif)

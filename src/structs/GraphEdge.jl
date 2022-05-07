@@ -99,7 +99,7 @@ function GraphEdge(
         object.opts[:_graph_idx] = jg.object.opts[:_graph_idx]
         object.opts[:_edge_idx] = length(GRAPH_EDGES) + 1
         opts = Dict{Symbol, Any}()
-        opts[:styles] = Function[]
+        opts[:styles] = OrderedDict{Symbol, Function}()
         object.opts[:_style_opts_cache] = Dict{Symbol, Any}()
         add_edge!(jg.graph.adjacency_graph, from_vertex, to_vertex)
         set_prop!(jg.graph.adjacency_graph, from_vertex, to_vertex, length(jg.ordering)+1)

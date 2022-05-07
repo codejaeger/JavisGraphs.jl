@@ -36,7 +36,7 @@ end
 function check_get_draw()
     g = create_dummy_graph()
     v = GraphVertex(3, 1:2)
-    v.opts[:styles] = [test_style1]
+    v.opts[:styles][:test_style1] = test_style1
     d = get_draw(:vertex)
     d(:video, v.object, :frames)
     return v.object.opts[:dummy] == true
@@ -55,13 +55,13 @@ function check_add_styles()
     v = GraphVertex(1, 1:2)
     style = (args...; kw...) -> ()
 
-    @add_styles v [(() -> ((args...; kw...) -> test_style1(args...; kw...)))()]
+    @add_styles v [:test_style1=>(() -> ((args...; kw...) -> test_style1(args...; kw...)))()]
 
-    @add_styles v [(() -> ((args...; kw...) -> ()))()]
+    @add_styles v [:empty_style=>(() -> ((args...; kw...) -> ()))()]
 
-    @add_styles v [(() -> ((args...; kw...) -> style(args...; kw...)))()]
+    @add_styles v [:style=>(() -> ((args...; kw...) -> style(args...; kw...)))()]
 
-    @add_styles v [dummy_vertex_shape()]
+    @add_styles v [:dummy_vertex_shape=>dummy_vertex_shape()]
 
     return length(v.opts[:styles]) == 4
 end

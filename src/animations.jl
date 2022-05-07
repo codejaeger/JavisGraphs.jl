@@ -1,4 +1,4 @@
-function updateGraph!(jg::JGraph, ag::Graphs.AbstractGraph)
+function updateGraph!(jg::JGraph, ag::AbstractGraph)
 end
 
 function updateGraph!(
