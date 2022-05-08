@@ -101,6 +101,9 @@ function GraphEdge(
         opts = Dict{Symbol, Any}()
         opts[:styles] = OrderedDict{Symbol, Function}()
         object.opts[:_style_opts_cache] = Dict{Symbol, Any}()
+        object.opts[:draw_shapes] = Function[]
+        object.opts[:shapes] = AbstractStyle[]
+        object.opts[:shapes_frames] = GFrames[]
         add_edge!(jg.graph.adjacency_graph, from_vertex, to_vertex)
         set_prop!(jg.graph.adjacency_graph, from_vertex, to_vertex, length(jg.ordering)+1)
         if !is_directed(jg.graph.adjacency_graph)
