@@ -100,6 +100,9 @@ function GraphVertex(
         opts = Dict{Symbol, Any}()
         opts[:styles] = OrderedDict{Symbol, Function}()
         object.opts[:_style_opts_cache] = Dict{Symbol, Any}()
+        object.opts[:draw_shapes] = Function[]
+        object.opts[:shapes] = AbstractStyle[]
+        object.opts[:shapes_frames] = GFrames[]
         add_vertex!(jg.graph.adjacency_graph)
         set_prop!(jg.graph.adjacency_graph, vertex_id, length(jg.ordering) + 1)
         vertex = GraphVertex(vertex_id, object, animate_on, style_property_map, opts)

@@ -1,0 +1,2 @@
+RANDOM_SEED = 1234
+COLORMAP = colormap("RdBu", 1000)

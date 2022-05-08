@@ -22,27 +22,27 @@ function get_draw(s::Symbol)
     end
 end
 
-"""
-    @add_styles(component::AbstractJavisGraphElement, draw)
+# """
+#     @add_styles(component::AbstractJavisGraphElement, draw)
 
-Aggregate all the drawing styles and store as part of the current object.
-"""
-macro add_styles(component, draw...)
-    # Process drawing functions
-    return quote
-        # Inside a quote - end block
-        # $(d) will turn Expr([a, b, c]) to [a, b, c]
-        # $(d...) will turn [Expr(a()), Expr(b())] to [a(), b()]
-        # $(d...)... further expanded the generated list above
-        # since component is a variable which might be created inside a function
-        # we need to escape (with esc()) it since it is not a global variable
-        # if !haskey($(esc(component)).opts, :styles)
-        #     $(esc(component)).opts[:styles] = Function[(args...; kw...) -> Luxor.clipreset()]
-        # end
-        # append!($(esc(component)).opts[:styles], [$(esc(draw...))...])
-        merge!($(esc(component)).opts[:styles], OrderedDict(collect([$(esc(draw...))...])))
-    end
-end
+# Aggregate all the drawing styles and store as part of the current object.
+# """
+# macro add_styles(component, draw...)
+#     # Process drawing functions
+#     return quote
+#         # Inside a quote - end block
+#         # $(d) will turn Expr([a, b, c]) to [a, b, c]
+#         # $(d...) will turn [Expr(a()), Expr(b())] to [a(), b()]
+#         # $(d...)... further expanded the generated list above
+#         # since component is a variable which might be created inside a function
+#         # we need to escape (with esc()) it since it is not a global variable
+#         # if !haskey($(esc(component)).opts, :styles)
+#         #     $(esc(component)).opts[:styles] = Function[(args...; kw...) -> Luxor.clipreset()]
+#         # end
+#         # append!($(esc(component)).opts[:styles], [$(esc(draw...))...])
+#         merge!($(esc(component)).opts[:styles], OrderedDict(collect([$(esc(draw...))...])))
+#     end
+# end
 
 """
     @register_style_opts(component::AbstractObject, styles...)
@@ -95,6 +95,20 @@ function check_frames_within(parent_frames, child_frames, child_id="")
             @warn "Child $(child_id) frame range $(child_frame_range) out of parent graph range $(parent_frame_range)"
         end
     end
+end
+
+function get_random_generator()
+    return Xoshiro(RANDOM_SEED)
+end
+
+function random_normal_generator(dims=1)
+    rng = get_random_generator()
+    return (; rng = rng) -> randn(rng, Float32, dims)
+end
+
+function random_uniform_generator(dims=1)
+    rng = get_random_generator()
+    return (; rng = rng) -> rand(rng, Float32, dims)
 end
 
 #=

@@ -206,7 +206,7 @@ function _global_layout(video, object, frame; kwargs...)
             end
         else
             if nv(g.graph.adjacency_graph) <= 1
-                layout_x, layout_y = [O], [O]
+                layout_x, layout_y = [0], [0]
             elseif g.layout == :spring
                 layout_x, layout_y = spring_layout(g.graph.adjacency_graph.graph)
             elseif g.layout == :spectral
